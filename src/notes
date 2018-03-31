@@ -1,0 +1,37 @@
+public void processFilesFromFolder(File folder)
+{
+    File[] folderEntries = folder.listFiles();
+    for (File entry : folderEntries)
+    {
+        if (entry.isDirectory())
+        {
+            processFilesFromFolder(entry);
+            continue;
+        }
+        // иначе вам попался файл, обрабатывайте его!
+    }
+}
+Модный метод — применение Streams API:
+
+Files.walk(Paths.get("ваш каталог тут"))
+     .filter(Files::isRegularFile)
+     .map(Path::toFile)
+     .collect(Collectors.toList())
+Или если вам нужны только пути, то просто
+
+Files.walk(Paths.get("ваш каталог тут"))
+     .filter(Files::isRegularFile)
+     .collect(Collectors.toList())
+Применяйте, если для вас слово «лямбда» означает больше, чем название греческой буквы.
+
+(2) Чтение файла в строку. Применяйте вот какую конструкцию:
+
+byte[] bytes = Files.readAllBytes(Paths.get(path));
+String content = new String(bytes, encoding);
+При этом вы, понятно, должны знать кодировку файла (вы ведь понимаете, что текстовый файл без кодировки — нонсенс?). В качестве возможных кодировок — StandardCharsets.UTF_8 для UTF-8. Ну или может подойти Charset.defaultCharset().
+
+(3) Ну и по поводу записи в массив есть своя тонкость. Когда вы обходите каталог, вам неизвестно, сколько файлов в нём окажется. Поэтому вы не можете выделить под них массив нужного размера. Поэтому лучше собирать данные в список (например, ArrayList<T>), который умеет автоматически расти.
+
+И работать по сути тоже лучше со списком. Если тем не менее вам понадобится именно массив, можно сконвертировать список в массив, например, так:
+
+String[] array = list.toArray(new String[0]);
